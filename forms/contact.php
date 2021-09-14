@@ -1,41 +1,52 @@
 <?php
-  /**
-  * Requires the "PHP Email Form" library
-  * The "PHP Email Form" library is available only in the pro version of the template
-  * The library should be uploaded to: vendor/php-email-form/php-email-form.php
-  * For more info and help: https://bootstrapmade.com/php-email-form/
-  */
-
-  // Replace contact@example.com with your real receiving email address
-  $receiving_email_address = 'shamanthkolegodu@gmail.com';
-
-  if( file_exists($php_email_form = '../assets/vendor/php-email-form/php-email-form.php' )) {
-    include( $php_email_form );
-  } else {
-    die( 'Unable to load the "PHP Email Form" Library!');
-  }
-
-  $contact = new PHP_Email_Form;
-  $contact->ajax = true;
   
-  $contact->to = $receiving_email_address;
-  $contact->from_name = $_POST['name'];
-  $contact->from_email = $_POST['email'];
-  $contact->subject = $_POST['subject'];
-
-  // Uncomment below code if you want to use SMTP to send emails. You need to enter your correct SMTP credentials
-  /*
-  $contact->smtp = array(
-    'host' => 'example.com',
-    'username' => 'example',
-    'password' => 'pass',
-    'port' => '587'
-  );
-  */
-
-  $contact->add_message( $_POST['name'], 'From');
-  $contact->add_message( $_POST['email'], 'Email');
-  $contact->add_message( $_POST['message'], 'Message', 10);
-
-  echo $contact->send();
+if($_POST) {
+    $visitor_name = "";
+    $visitor_email = "";
+    $subject = "";
+    $message = "";
+      
+    if(isset($_POST['visitor_name'])) {
+        $visitor_name = filter_var($_POST['visitor_name'], FILTER_SANITIZE_STRING);
+        $email_body .= "<div>
+                           <label><b>Visitor Name:</b></label>&nbsp;<span>".$visitor_name."</span>
+                        </div>";
+    }
+ 
+    if(isset($_POST['visitor_email'])) {
+        $visitor_email = str_replace(array("\r", "\n", "%0a", "%0d"), '', $_POST['visitor_email']);
+        $visitor_email = filter_var($visitor_email, FILTER_VALIDATE_EMAIL);
+        $email_body .= "<div>
+                           <label><b>Visitor Email:</b></label>&nbsp;<span>".$visitor_email."</span>
+                        </div>";
+    }
+      
+    if(isset($_POST['subject'])) {
+        $subject = filter_var($_POST['subject'], FILTER_SANITIZE_STRING);
+        $email_body .= "<div>
+                           <label><b>Reason For Contacting Us:</b></label>&nbsp;<span>".$subject."</span>
+                        </div>";
+    }
+      
+    if(isset($_POST['message'])) {
+        $message = htmlspecialchars($_POST['message']);
+        $email_body .= "<div>
+                           <label><b>Visitor Message:</b></label>
+                           <div>".$message."</div>
+                        </div>";
+    }
+    $recipient = "shamanthkolegodu@gmail.com"; 
+    $headers  = 'MIME-Version: 1.0' . "\r\n"
+    .'Content-type: text/html; charset=utf-8' . "\r\n"
+    .'From: ' . $visitor_email . "\r\n";
+      
+    if(mail($recipient, $subject, $message)) {
+        echo "<p>Thank you for contacting me, $visitor_name. You will get a reply within 24 hours.</p>";
+    } else {
+        echo '<p>We are sorry but the email did not go through.</p>';
+    }
+      
+} else {
+    echo '<p>Something went wrong</p>';
+}
 ?>
